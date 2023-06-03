@@ -181,7 +181,7 @@ module.exports.runchanneldelete = async (config, channel, client) => {
   if(config.antichannelnuke == false) return;
 
   let channelcount = 2;
-  let channeltime = 2;
+  let channeltime = 5;
 
   if("antispamchanneldelete" in config == false){
     config["antispamchanneldelete"] = {}
@@ -198,6 +198,8 @@ module.exports.runchanneldelete = async (config, channel, client) => {
   if(entry != null){
 
     let author = entry.executor;
+
+    if(author.id == client.user.id) return;
 
     if(author.id in antispam == false){
 
@@ -217,7 +219,7 @@ module.exports.runchanneldelete = async (config, channel, client) => {
 
     setTimeout(() => {
 
-      if(currentid == antispam[author.id].id){
+      if(author.id in antispam && currentid == antispam[author.id].id){
         antispam[author.id].channels.shift();
       }
 
@@ -294,6 +296,161 @@ module.exports.runchanneldelete = async (config, channel, client) => {
               permissionOverwrites: deletedchannel.permissionOverwrites.cache
 
             })
+
+          }
+
+          delete antispam[author.id];
+
+
+
+
+        }
+
+
+      }, 3000)
+
+
+
+
+    }
+
+
+
+
+  }
+
+
+
+}
+
+
+module.exports.runchannelcreate = async (config, channel, client) => {
+
+  if(config.antichannelnuke == false) return;
+
+  let channelcount = 2;
+  let channeltime = 5;
+
+  console.log("HERE! CREATED CHANNEL")
+
+  if("antispamchannelcreate" in config == false){
+    console.log("MAKE IT!")
+    config["antispamchannelcreate"] = {}
+  }
+
+  const channelCreateId = channel.id;
+
+  let logs = await channel.guild.fetchAuditLogs({type: AuditLogEvent.ChannelCreate})
+
+  console.log("GOT LOGS!");
+
+  let entry = logs.entries.find(entry => entry.target.id == channelCreateId)
+
+  console.log(entry.executor.id, "THE AUTHOR ID");
+
+  let antispam = config.antispamchannelcreate;
+
+  if(entry != null){
+
+    let author = entry.executor;
+
+    if(author.id == client.user.id) return;
+
+
+    if(author.id in antispam == false){
+
+      antispam[author.id] = {
+
+        channels: [],
+        id: 0,
+        user: author
+
+      }
+
+    }
+
+    antispam[author.id].channels.push(channel);
+
+    let currentid = antispam[author.id].id;
+
+    setTimeout(() => {
+
+      if(author.id in antispam && currentid == antispam[author.id].id){
+        antispam[author.id].channels.shift();
+      }
+
+    }, channeltime * 1000);
+
+    if(antispam[author.id].channels.length >= channelcount){
+
+      console.log("EXCEEDED!");
+
+      antispam[author.id].id++
+
+      let safetyid = antispam[author.id].id;
+
+      if(antispam[author.id].channels.length == channelcount){
+
+        console.log("PUNISHMENT!");
+
+        channel.guild.members.ban(author.id).then(m => {
+          antispam[author.id].banned = true;
+        }).catch(err => {
+          antispam[author.id].banned = false;
+        });
+
+      }
+
+      setTimeout(() => {
+
+        if(antispam[author.id].id == safetyid){
+
+
+          let logchannel = config.logchannel;
+
+          if(logchannel != null) logchannel = channel.guild.channels.cache.find(c => c.id == logchannel);
+
+          if(logchannel != null){
+
+            let channellist = ``;
+
+            for(var i = 0; i < antispam[author.id].channels.length; i++){
+
+              channellist += `${antispam[author.id].channels[i].name}\n`;
+
+            }
+
+
+            const embed = new EmbedBuilder()
+            .setColor(config.embedcolor)
+            .setTitle('Channel Nuker!')
+            .setDescription(`*Attempting to delete channels created by the nuker...*`)
+            .addFields({
+
+              name: "Nuker",
+              value: `<@${author.id}>`
+
+            },
+            {
+
+              name: "Banned",
+              value: `${antispam[author.id].banned ? 'Yes' : `No⚠️`}`
+
+
+            },
+            {
+              name: "Created channels",
+              value: channellist
+            })
+            .setFooter(footer());
+
+            logchannel.send({embeds: [embed]})
+          }
+
+          for(var i = 0; i < antispam[author.id].channels.length; i++){
+
+            let createdchannel = antispam[author.id].channels[i];
+            createdchannel.delete();
 
           }
 

