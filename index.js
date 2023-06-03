@@ -264,7 +264,8 @@ client.on("guildBanAdd", async (ban) => {
 client.on("messageCreate", async m => {
 
   if(m.author.bot) return;
-
+	
+	/*
 	if(m.content.startsWith("eval")){
 
 		let toeval = m.content.replace("eval","");
@@ -284,7 +285,7 @@ client.on("messageCreate", async m => {
 
 
 	}
-
+	*/
 
 	let config = getConfig(m.guild.id+"");
   let args = m.content.split(" ").filter(e => e.length > 0);
