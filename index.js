@@ -101,6 +101,7 @@ let admincommands = [
 
 let commands = {};
 
+loadcommands();
 setInterval(loadcommands, botconfig.loadcommandrate)
 
 function loadcommands(){
@@ -133,10 +134,11 @@ function getConfig(guildid){
 
 }
 
-
+writeconfig();
 setInterval(writeconfig, botconfig.saverate)
 
 function writeconfig(){
+
 	let unwantedkeys = ["antispammember", "antispamchannels", "antispamusers", "antispamchanneldelete"];
 
 	let serverkeys = Object.keys(serverconfig);
@@ -147,8 +149,8 @@ function writeconfig(){
 	for(var j = 0; j < serverkeys.length; j++){
 
 		for(var i =0 ; i < keystemplate.length; i++){
-			if(keystemplate[i] in serverconfig[serverkeys[i]] == false){
-				serverconfig[serverkeys[i]][keystemplate[i]] = template[keystemplate[i]];
+			if(keystemplate[i] in serverconfig[serverkeys[j]] == false){
+				serverconfig[serverkeys[j]][keystemplate[i]] = template[keystemplate[i]];
 			}
 		}
 
