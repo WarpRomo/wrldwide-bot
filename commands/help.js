@@ -10,7 +10,6 @@ module.exports.run = async (m, config, args) => {
 	embed.addFields(
 		{ name: 'Safety', value: "```" + `
 ${config.prefix}jail
-${config.prefix}nuke
 ${config.prefix}log
 ${config.prefix}antiraid <on or off>
 ${config.prefix}antimembernuke <on or off>
